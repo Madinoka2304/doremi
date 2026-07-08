@@ -200,7 +200,7 @@
   }
 
   .panel-toggle{
-    position:fixed; left:min(60vw, 400px); top:50%;
+    position:fixed; left:0px; top:50%;
     transform:translate(-50%, -50%);
     z-index:60;
     width:30px; height:56px; border-radius:14px;
@@ -960,7 +960,21 @@ panelToggle.addEventListener('click', ()=>{
   textPanel.classList.toggle('collapsed', panelCollapsed);
   panelToggle.classList.toggle('collapsed', panelCollapsed);
   panelToggle.textContent = panelCollapsed ? '›' : '‹';
+  if(panelCollapsed){
+    panelToggle.style.left = '0px';
+  } else {
+    positionPanelToggle();
+  }
 });
+
+/* measure the real edge of the panel instead of guessing with a CSS formula */
+function positionPanelToggle(){
+  if(panelCollapsed) return;
+  const rect = textPanel.getBoundingClientRect();
+  panelToggle.style.left = rect.right + 'px';
+}
+positionPanelToggle();
+window.addEventListener('resize', positionPanelToggle);
 
 /* ---------- SEARCH ---------- */
 const searchToggle = document.getElementById('searchToggle');
