@@ -203,7 +203,7 @@
   }
 
   .panel-toggle{
-    position:fixed; left:0px; top:50%;
+    position:fixed; left:calc(min(60vw, 400px) + 6px); top:50%;
     transform:translate(-50%, -50%);
     z-index:60;
     width:30px; height:56px; border-radius:14px;
@@ -219,7 +219,7 @@
   }
 
   .list-scroll{
-    flex:1; overflow-y:auto; padding:20vh 18px;
+    flex:1; overflow-y:auto; padding:14px 18px 20vh;
   }
   .list-scroll::-webkit-scrollbar{ display:none; }
 
@@ -308,7 +308,9 @@
     min-width:0; min-height:0;
   }
   .group-tile:active{ transform:scale(0.95); }
-  .group-tile .gt-icon{ font-size:clamp(21px, 6.5vw, 24.2px); }
+  .group-tile .gt-icon{ font-size:clamp(21px, 6.5vw, 24.2px); display:flex; align-items:center; justify-content:center; }
+  .group-tile .gt-icon svg{ width:1em; height:1em; color:var(--muted); }
+  .group-tile.active .gt-icon svg{ color:var(--gold); }
   .group-tile .gt-label{
     font-size:clamp(10.5px, 3vw, 11.55px); font-weight:600; text-align:center; line-height:1.25; color:var(--muted);
     padding:0 4px;
@@ -799,7 +801,7 @@ MENU.forEach((cat)=>{
 const GROUPS = [
   { key:"food", label:"Основное меню", icon:"🍽️" },
   { key:"bar", label:"Барное меню", icon:"🍸" },
-  { key:"hookah", label:"Кальянное меню", icon:"💨" },
+  { key:"hookah", label:"Кальянное меню", icon:`<svg viewBox="0 0 24 24" class="hookah-icon"><path fill="currentColor" d="M11 0h2v3h-2z"/><path fill="currentColor" opacity="0.55" d="M9.3 2.2h5.4a2.7 1 0 0 1-5.4 0z"/><path fill="currentColor" d="M7 4.3h10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1z"/><path fill="currentColor" d="M11 5.3h2v2.4h-2z"/><circle cx="12" cy="9.3" r="2.4" fill="currentColor"/><path fill="currentColor" opacity="0.55" d="M9.6 9.3h4.8v1h-4.8z"/><path fill="currentColor" d="M12 11c2.6 0 4.4 1.7 4.4 3.9 0 .5-.6.9-1.3.9H8.9c-.7 0-1.3-.4-1.3-.9C7.6 12.7 9.4 11 12 11z"/><path fill="currentColor" opacity="0.55" d="M8.3 13.4h7.4v1.2H8.3z"/><ellipse cx="12" cy="16.3" rx="5.3" ry="2.6" fill="currentColor"/><path fill="currentColor" d="M9 18.6h6v1.4H9z"/><path fill="currentColor" d="M9.4 20h5.2v1.4H9.4z"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M6.2 10.4c-2 .3-3.2 1.6-3.2 3 0 1.8 1.8 2.9 3.6 2.5"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M16.6 6.3c1.6 0 2.4-1 2.4-2.1 0-.8-.5-1.5-1.3-1.8"/></svg>`, isSvg:true },
   { key:"promo", label:"Акции", icon:"🎉" },
   { key:"crazy", label:"Crazy menu", icon:"🎤" },
 ];
@@ -903,14 +905,43 @@ let lastChangeTime = 0;
 let ticking = false;
 
 let suppressAutoActivate = false;
-let suppressTimer = null;
+let settleWatcherId = null;
+
 function jumpToItem(idx){
   suppressAutoActivate = true;
-  clearTimeout(suppressTimer);
   const el = document.querySelector(`.list-item[data-idx="${idx}"]`);
   el?.scrollIntoView({behavior:'smooth', block:'center'});
   setActive(idx);
-  suppressTimer = setTimeout(()=>{ suppressAutoActivate = false; }, 700);
+  watchForScrollSettle();
+}
+
+/* instead of guessing how long a smooth-scroll will take (which fails for
+   very long jumps across the ~200-item list), poll the actual scroll
+   position frame-by-frame and only release the lock once it has truly
+   stopped moving for a few consecutive frames — works regardless of
+   distance or browser 'scrollend' support */
+function watchForScrollSettle(){
+  cancelAnimationFrame(settleWatcherId);
+  let lastTop = listScroll.scrollTop;
+  let stillFrames = 0;
+  const REQUIRED_STILL_FRAMES = 6;
+  const MAX_FRAMES = 240; // ~4s hard safety cap, just in case
+
+  function tick(frameCount){
+    const top = listScroll.scrollTop;
+    if(Math.abs(top - lastTop) < 0.5){
+      stillFrames++;
+    } else {
+      stillFrames = 0;
+      lastTop = top;
+    }
+    if(stillFrames >= REQUIRED_STILL_FRAMES || frameCount >= MAX_FRAMES){
+      suppressAutoActivate = false;
+      return;
+    }
+    settleWatcherId = requestAnimationFrame(()=>tick(frameCount+1));
+  }
+  settleWatcherId = requestAnimationFrame(()=>tick(0));
 }
 
 function findClosestAndActivate(){
@@ -944,7 +975,6 @@ window.addEventListener('resize', findClosestAndActivate);
 requestAnimationFrame(()=>{
   requestAnimationFrame(()=>{
     setActive(0);
-    findClosestAndActivate();
   });
 });
 
@@ -967,21 +997,7 @@ panelToggle.addEventListener('click', ()=>{
   textPanel.classList.toggle('collapsed', panelCollapsed);
   panelToggle.classList.toggle('collapsed', panelCollapsed);
   panelToggle.textContent = panelCollapsed ? '›' : '‹';
-  if(panelCollapsed){
-    panelToggle.style.left = '0px';
-  } else {
-    positionPanelToggle();
-  }
 });
-
-/* measure the real edge of the panel instead of guessing with a CSS formula */
-function positionPanelToggle(){
-  if(panelCollapsed) return;
-  const rect = textPanel.getBoundingClientRect();
-  panelToggle.style.left = (rect.right + 10) + 'px';
-}
-positionPanelToggle();
-window.addEventListener('resize', positionPanelToggle);
 
 /* measure the real bottom edge of header+cat-tabs instead of guessing a
    fixed padding-top number that breaks whenever fonts/wrapping change */
@@ -1001,19 +1017,6 @@ if(window.ResizeObserver){
   new ResizeObserver(updateHeaderClearance).observe(catTabs);
 } else {
   [100, 400, 1000].forEach(ms => setTimeout(updateHeaderClearance, ms));
-}
-
-/* fonts (Google Fonts) can finish loading slightly after first paint and
-   nudge layout — recheck once they're ready, and keep watching the panel
-   itself for any size change (font swap, content change, orientation, etc.) */
-if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(positionPanelToggle);
-}
-if(window.ResizeObserver){
-  new ResizeObserver(positionPanelToggle).observe(textPanel);
-} else {
-  // fallback for older browsers: a few delayed rechecks after load
-  [100, 400, 1000].forEach(ms => setTimeout(positionPanelToggle, ms));
 }
 
 /* ---------- SEARCH ---------- */
@@ -1125,7 +1128,7 @@ listScroll.addEventListener('click', (e)=>{
   }
   const item = e.target.closest('.list-item');
   if(item && Number(item.dataset.idx) !== activeIdx){
-    item.scrollIntoView({behavior:'smooth', block:'center'});
+    jumpToItem(Number(item.dataset.idx));
   }
 });
 
