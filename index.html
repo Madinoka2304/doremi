@@ -229,6 +229,9 @@
   .row-compact{
     display:flex; align-items:baseline; justify-content:space-between; gap:10px;
   }
+  .row-compact .li-name{
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1;
+  }
   .li-name{
     font-family:'Instrument Serif',serif; font-style:italic;
     font-size:15.95px; line-height:1.2; color:var(--muted);
@@ -238,7 +241,10 @@
     font-family:'JetBrains Mono',monospace; font-size:11.2px; color:var(--muted);
     flex-shrink:0; transition:opacity .25s ease;
   }
-  .list-item.active .li-name{ font-size:26.95px; color:var(--text); }
+  .list-item.active .li-name{
+    font-size:26.95px; color:var(--text);
+    white-space:normal; overflow:visible; text-overflow:clip;
+  }
   .list-item.active .li-price-inline{ opacity:0; }
 
   .li-detail{
@@ -768,9 +774,9 @@ MENU.forEach((cat)=>{
 const GROUPS = [
   { key:"food", label:"Основное меню", icon:"🍽️" },
   { key:"bar", label:"Барное меню", icon:"🍸" },
+  { key:"crazy", label:"Crazy menu", icon:"🎤" },
   { key:"hookah", label:"Кальянное меню", icon:"💨" },
   { key:"promo", label:"Акции", icon:"🎉" },
-  { key:"crazy", label:"Crazy menu", icon:"🎤" },
 ];
 const groupTiles = document.getElementById('groupTiles');
 GROUPS.forEach(g=>{
