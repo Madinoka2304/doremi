@@ -195,6 +195,7 @@
     padding-top:114px; padding-bottom:88px;
     transition:transform .42s cubic-bezier(.3,.8,.35,1);
     overflow-x:hidden;
+    overflow-y:hidden;
     box-sizing:border-box;
   }
   .text-panel.collapsed{
@@ -294,10 +295,11 @@
     grid-template-areas:
       "a b c"
       "d e c";
-    gap:8px;
+    gap:18px;
     padding:0 26px 14px 18px;
     max-width:100%;
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y:hidden;
     box-sizing:border-box;
   }
   .group-tile:nth-child(1){ grid-area:a; }
@@ -306,15 +308,15 @@
   .group-tile:nth-child(4){ grid-area:e; }
   .group-tile:nth-child(5){ grid-area:c; }
   .group-tile{
-    aspect-ratio:1.15; border-radius:12px;
+    aspect-ratio:0.95; border-radius:12px;
     background:var(--surface-2); border:2px solid var(--line);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
     transition:border-color .25s ease, box-shadow .25s ease, transform .15s ease;
-    min-width:0; min-height:0; overflow:hidden;
+    min-width:0; min-height:0;
   }
   .group-tile--tall{
     aspect-ratio:auto; height:100%;
-    flex-direction:column; gap:8px; padding:12px 0;
+    flex-direction:column; justify-content:space-evenly; gap:8px; padding:16px 0;
     min-width:0;
   }
   .group-tile--tall .gt-icon{ font-size:18px; flex-shrink:0; }
@@ -325,9 +327,9 @@
     min-height:0;
   }
   .group-tile:active{ transform:scale(0.95); }
-  .group-tile .gt-icon{ font-size:24.2px; }
+  .group-tile .gt-icon{ font-size:clamp(18px, 6vw, 24.2px); }
   .group-tile .gt-label{
-    font-size:11.55px; font-weight:600; text-align:center; line-height:1.2; color:var(--muted);
+    font-size:clamp(9px, 2.8vw, 11.55px); font-weight:600; text-align:center; line-height:1.2; color:var(--muted);
     padding:0 4px;
   }
   .group-tile.active{
@@ -426,6 +428,7 @@
 
   @media (min-width:640px){
     .text-panel{ padding-left:34px; }
+    .group-tiles{ grid-template-columns:1fr 1fr 0.7fr; gap:22px; padding:0 30px 16px 18px; }
   }
   @media (prefers-reduced-motion: reduce){
     .vinyl{ animation:none !important; }
@@ -799,7 +802,11 @@ MENU.forEach((cat)=>{
   btn.textContent = cat.cat;
   btn.dataset.cat = cat.cat;
   btn.addEventListener('click', ()=>{
-    document.querySelector(`.cat-divider[data-cat="${cat.cat}"]`)?.scrollIntoView({behavior:'smooth', block:'start'});
+    const idx = flat.findIndex(d => d.cat === cat.cat);
+    if(idx < 0) return;
+    const el = document.querySelector(`.list-item[data-idx="${idx}"]`);
+    el?.scrollIntoView({behavior:'smooth', block:'center'});
+    setActive(idx);
   });
   catTabs.appendChild(btn);
 });
@@ -946,8 +953,12 @@ listScroll.addEventListener('scroll', ()=>{
 }, {passive:true});
 window.addEventListener('resize', findClosestAndActivate);
 
-setActive(0);
-requestAnimationFrame(findClosestAndActivate);
+requestAnimationFrame(()=>{
+  requestAnimationFrame(()=>{
+    setActive(0);
+    findClosestAndActivate();
+  });
+});
 
 document.getElementById('vinylWrap').addEventListener('click', ()=>{
   playing = !playing;
