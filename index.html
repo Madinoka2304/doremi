@@ -192,7 +192,7 @@
     border-right:1px solid var(--line);
     box-shadow:14px 0 40px -18px rgba(0,0,0,0.55);
     display:flex; flex-direction:column;
-    padding-top:114px; padding-bottom:88px;
+    padding-top:var(--header-clearance, 148px); padding-bottom:88px;
     transition:transform .42s cubic-bezier(.3,.8,.35,1);
     overflow-x:hidden;
     overflow-y:hidden;
@@ -293,10 +293,6 @@
     display:grid;
     flex-shrink:0;
     grid-template-columns:repeat(3, 1fr);
-    grid-template-rows:auto auto;
-    grid-template-areas:
-      "a b c"
-      "d e c";
     gap:10px;
     padding:0 20px 14px 18px;
     max-width:100%;
@@ -304,29 +300,12 @@
     overflow-y:hidden;
     box-sizing:border-box;
   }
-  .group-tile:nth-child(1){ grid-area:a; }
-  .group-tile:nth-child(2){ grid-area:b; }
-  .group-tile:nth-child(3){ grid-area:d; }
-  .group-tile:nth-child(4){ grid-area:e; }
-  .group-tile:nth-child(5){ grid-area:c; }
   .group-tile{
     aspect-ratio:0.82; border-radius:12px;
     background:var(--surface-2); border:2px solid var(--line);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
     transition:border-color .25s ease, box-shadow .25s ease, transform .15s ease;
     min-width:0; min-height:0;
-  }
-  .group-tile--tall{
-    aspect-ratio:auto; height:100%;
-    flex-direction:column; justify-content:space-evenly; gap:8px; padding:16px 0;
-    min-width:0;
-  }
-  .group-tile--tall .gt-icon{ font-size:18px; flex-shrink:0; }
-  .group-tile--tall .gt-label{
-    writing-mode:vertical-rl; text-orientation:upright;
-    letter-spacing:2px; font-size:11px;
-    padding:0; margin:0;
-    min-height:0;
   }
   .group-tile:active{ transform:scale(0.95); }
   .group-tile .gt-icon{ font-size:clamp(21px, 6.5vw, 24.2px); }
@@ -434,7 +413,7 @@
   }
   @media (min-width:640px){
     .text-panel{ padding-left:34px; }
-    .group-tiles{ grid-template-columns:1fr 1fr 0.7fr; gap:22px; padding:0 30px 16px 18px; }
+    .group-tiles{ gap:22px; padding:0 30px 16px 18px; }
   }
   @media (prefers-reduced-motion: reduce){
     .vinyl{ animation:none !important; }
@@ -810,9 +789,7 @@ MENU.forEach((cat)=>{
   btn.addEventListener('click', ()=>{
     const idx = flat.findIndex(d => d.cat === cat.cat);
     if(idx < 0) return;
-    const el = document.querySelector(`.list-item[data-idx="${idx}"]`);
-    el?.scrollIntoView({behavior:'smooth', block:'center'});
-    setActive(idx);
+    jumpToItem(idx);
   });
   catTabs.appendChild(btn);
 });
@@ -829,22 +806,15 @@ const GROUPS = [
 const groupTiles = document.getElementById('groupTiles');
 GROUPS.forEach(g=>{
   const tile = document.createElement('button');
-  tile.className = 'group-tile' + (g.key === 'crazy' ? ' group-tile--tall' : '');
+  tile.className = 'group-tile';
   tile.dataset.group = g.key;
-  if(g.key === 'crazy'){
-    const [w1, w2] = g.label.toUpperCase().split(' ');
-    tile.innerHTML = `<div class="gt-label">${w1}</div><div class="gt-icon">${g.icon}</div><div class="gt-label">${w2}</div>`;
-  } else {
-    tile.innerHTML = `<div class="gt-icon">${g.icon}</div><div class="gt-label">${g.label}</div>`;
-  }
+  tile.innerHTML = `<div class="gt-icon">${g.icon}</div><div class="gt-label">${g.label}</div>`;
   tile.addEventListener('click', ()=>{
     const firstCat = MENU.find(c => c.group === g.key);
     if(!firstCat) return;
     const idx = flat.findIndex(d => d.cat === firstCat.cat);
     if(idx < 0) return;
-    const el = document.querySelector(`.list-item[data-idx="${idx}"]`);
-    el?.scrollIntoView({behavior:'smooth', block:'center'});
-    setActive(idx);
+    jumpToItem(idx);
   });
   groupTiles.appendChild(tile);
 });
@@ -932,8 +902,20 @@ function setActive(i){
 let lastChangeTime = 0;
 let ticking = false;
 
+let suppressAutoActivate = false;
+let suppressTimer = null;
+function jumpToItem(idx){
+  suppressAutoActivate = true;
+  clearTimeout(suppressTimer);
+  const el = document.querySelector(`.list-item[data-idx="${idx}"]`);
+  el?.scrollIntoView({behavior:'smooth', block:'center'});
+  setActive(idx);
+  suppressTimer = setTimeout(()=>{ suppressAutoActivate = false; }, 700);
+}
+
 function findClosestAndActivate(){
   ticking = false;
+  if(suppressAutoActivate) return;
   const rect = listScroll.getBoundingClientRect();
   const centerY = rect.top + rect.height/2;
   let closest = null, minDist = Infinity;
@@ -1001,6 +983,26 @@ function positionPanelToggle(){
 positionPanelToggle();
 window.addEventListener('resize', positionPanelToggle);
 
+/* measure the real bottom edge of header+cat-tabs instead of guessing a
+   fixed padding-top number that breaks whenever fonts/wrapping change */
+const headerTop = document.querySelector('header.top');
+function updateHeaderClearance(){
+  const catRect = catTabs.getBoundingClientRect();
+  const clearance = Math.ceil(catRect.bottom) + 16; // small safety buffer
+  document.documentElement.style.setProperty('--header-clearance', clearance + 'px');
+}
+updateHeaderClearance();
+window.addEventListener('resize', updateHeaderClearance);
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(updateHeaderClearance);
+}
+if(window.ResizeObserver){
+  new ResizeObserver(updateHeaderClearance).observe(headerTop);
+  new ResizeObserver(updateHeaderClearance).observe(catTabs);
+} else {
+  [100, 400, 1000].forEach(ms => setTimeout(updateHeaderClearance, ms));
+}
+
 /* fonts (Google Fonts) can finish loading slightly after first paint and
    nudge layout — recheck once they're ready, and keep watching the panel
    itself for any size change (font swap, content change, orientation, etc.) */
@@ -1061,12 +1063,11 @@ searchResultsList.addEventListener('click', (e)=>{
   const hit = e.target.closest('.search-hit');
   if(!hit) return;
   const idx = hit.dataset.id;
-  const el = document.querySelector(`.list-item[data-idx="${idx}"]`);
   searchResultsOverlay.classList.remove('open');
   searchWrap.classList.remove('open');
   searchToggle.classList.remove('active');
   searchInput.value = '';
-  el?.scrollIntoView({behavior:'smooth', block:'center'});
+  jumpToItem(idx);
 });
 
 let cart = {};
