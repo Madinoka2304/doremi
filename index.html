@@ -194,6 +194,8 @@
     display:flex; flex-direction:column;
     padding-top:114px; padding-bottom:88px;
     transition:transform .42s cubic-bezier(.3,.8,.35,1);
+    overflow-x:hidden;
+    box-sizing:border-box;
   }
   .text-panel.collapsed{
     transform:translateX(-100%);
@@ -293,7 +295,10 @@
       "a b c"
       "d e c";
     gap:8px;
-    padding:0 18px 14px;
+    padding:0 26px 14px 18px;
+    max-width:100%;
+    overflow:hidden;
+    box-sizing:border-box;
   }
   .group-tile:nth-child(1){ grid-area:a; }
   .group-tile:nth-child(2){ grid-area:b; }
@@ -305,16 +310,19 @@
     background:var(--surface-2); border:2px solid var(--line);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
     transition:border-color .25s ease, box-shadow .25s ease, transform .15s ease;
+    min-width:0; min-height:0; overflow:hidden;
   }
   .group-tile--tall{
     aspect-ratio:auto; height:100%;
     flex-direction:column; gap:8px; padding:12px 0;
+    min-width:0;
   }
-  .group-tile--tall .gt-icon{ font-size:18px; }
+  .group-tile--tall .gt-icon{ font-size:18px; flex-shrink:0; }
   .group-tile--tall .gt-label{
     writing-mode:vertical-rl; text-orientation:upright;
     letter-spacing:2px; font-size:11px;
     padding:0; margin:0;
+    min-height:0;
   }
   .group-tile:active{ transform:scale(0.95); }
   .group-tile .gt-icon{ font-size:24.2px; }
@@ -971,7 +979,7 @@ panelToggle.addEventListener('click', ()=>{
 function positionPanelToggle(){
   if(panelCollapsed) return;
   const rect = textPanel.getBoundingClientRect();
-  panelToggle.style.left = rect.right + 'px';
+  panelToggle.style.left = (rect.right + 10) + 'px';
 }
 positionPanelToggle();
 window.addEventListener('resize', positionPanelToggle);
