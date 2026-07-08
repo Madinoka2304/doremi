@@ -297,8 +297,8 @@
     grid-template-areas:
       "a b c"
       "d e c";
-    gap:18px;
-    padding:0 26px 14px 18px;
+    gap:10px;
+    padding:0 20px 14px 18px;
     max-width:100%;
     overflow-x:hidden;
     overflow-y:hidden;
@@ -428,6 +428,10 @@
     font-family:'JetBrains Mono',monospace; font-weight:700; font-size:18px; color:var(--gold);
   }
 
+  @media (max-width:479px){
+    .text-panel{ width:70%; }
+    .vinyl-wrap{ left:64%; }
+  }
   @media (min-width:640px){
     .text-panel{ padding-left:34px; }
     .group-tiles{ grid-template-columns:1fr 1fr 0.7fr; gap:22px; padding:0 30px 16px 18px; }
