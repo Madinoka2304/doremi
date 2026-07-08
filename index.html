@@ -203,10 +203,10 @@
     position:fixed; left:8px; top:50%; transform:translateY(-50%);
     z-index:60;
     width:30px; height:56px; border-radius:0 14px 14px 0;
-    background:var(--surface-2); border:1px solid var(--line); border-left:none;
-    color:var(--text); font-size:15px;
+    background:var(--surface-2); border:1.5px solid var(--gold); border-left:none;
+    color:var(--gold); font-size:15px; font-weight:700;
     display:flex; align-items:center; justify-content:center;
-    box-shadow:4px 0 14px -6px rgba(0,0,0,0.5);
+    box-shadow:4px 0 14px -6px rgba(0,0,0,0.5), 0 0 10px -4px rgba(232,179,77,0.5);
   }
 
   .list-scroll{
@@ -215,7 +215,7 @@
   .list-scroll::-webkit-scrollbar{ display:none; }
 
   .cat-divider{
-    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:1.5px;
+    font-family:'JetBrains Mono',monospace; font-size:12.1px; letter-spacing:1.5px;
     color:var(--sage); text-transform:uppercase;
     padding:18px 0 8px;
   }
@@ -231,14 +231,14 @@
   }
   .li-name{
     font-family:'Instrument Serif',serif; font-style:italic;
-    font-size:17px; line-height:1.2; color:var(--muted);
+    font-size:15.95px; line-height:1.2; color:var(--muted);
     transition:font-size .32s cubic-bezier(.3,.8,.35,1), color .32s ease;
   }
   .li-price-inline{
-    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:11.2px; color:var(--muted);
     flex-shrink:0; transition:opacity .25s ease;
   }
-  .list-item.active .li-name{ font-size:29px; color:var(--text); }
+  .list-item.active .li-name{ font-size:26.95px; color:var(--text); }
   .list-item.active .li-price-inline{ opacity:0; }
 
   .li-detail{
@@ -249,13 +249,13 @@
     max-height:220px; opacity:1; margin-top:10px;
   }
   .li-desc{
-    font-size:14.5px; color:var(--muted); line-height:1.5;
+    font-size:13.5px; color:var(--muted); line-height:1.5;
   }
   .li-foot{
     margin-top:14px; display:flex; align-items:center; gap:14px;
   }
   .li-price{
-    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:20px; color:var(--gold);
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:18.7px; color:var(--gold);
   }
   .li-add{
     width:40px; height:40px; border-radius:50%;
@@ -274,36 +274,27 @@
   .play-hint.playing .dot{ background:var(--gold); animation:pulse 1s ease-in-out infinite; }
 
   .group-tiles{
-    display:grid; grid-template-columns:repeat(3, 1fr); gap:7px;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(84px, 1fr)); gap:8px;
     padding:0 18px 14px;
   }
   .group-tile{
-    aspect-ratio:1.35; border-radius:12px;
+    aspect-ratio:1.15; border-radius:12px;
     background:var(--surface-2); border:2px solid var(--line);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
     transition:border-color .25s ease, box-shadow .25s ease, transform .15s ease;
   }
   .group-tile:active{ transform:scale(0.95); }
-  .group-tile .gt-icon{ font-size:19px; }
+  .group-tile .gt-icon{ font-size:24.2px; }
   .group-tile .gt-label{
-    font-size:9.5px; font-weight:600; text-align:center; line-height:1.2; color:var(--muted);
+    font-size:11.55px; font-weight:600; text-align:center; line-height:1.2; color:var(--muted);
     padding:0 4px;
   }
   .group-tile.active{
     border-color:var(--gold);
-    box-shadow:0 0 0 1px var(--gold), 0 0 16px -2px rgba(232,179,77,0.5);
+    box-shadow:0 0 8px -3px rgba(232,179,77,0.4);
   }
   .group-tile.active .gt-label{ color:var(--gold); }
   @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
-  @media (min-width:640px){
-    .group-tile{ aspect-ratio:1; }
-    .group-tile .gt-icon{ font-size:34px; }
-    .group-tile .gt-label{ font-size:13.5px; }
-  }
-  @media (max-width:340px){
-    .group-tile .gt-icon{ font-size:16px; }
-    .group-tile .gt-label{ font-size:8.5px; }
-  }
   .nav-arrow:active{ transform:scale(0.92); }
 
   /* ---------- MINI PLAYER (cart) ---------- */
@@ -777,9 +768,9 @@ MENU.forEach((cat)=>{
 const GROUPS = [
   { key:"food", label:"Основное меню", icon:"🍽️" },
   { key:"bar", label:"Барное меню", icon:"🍸" },
-  { key:"crazy", label:"Crazy menu", icon:"🎤" },
   { key:"hookah", label:"Кальянное меню", icon:"💨" },
   { key:"promo", label:"Акции", icon:"🎉" },
+  { key:"crazy", label:"Crazy menu", icon:"🎤" },
 ];
 const groupTiles = document.getElementById('groupTiles');
 GROUPS.forEach(g=>{
