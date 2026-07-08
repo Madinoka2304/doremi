@@ -976,6 +976,19 @@ function positionPanelToggle(){
 positionPanelToggle();
 window.addEventListener('resize', positionPanelToggle);
 
+/* fonts (Google Fonts) can finish loading slightly after first paint and
+   nudge layout — recheck once they're ready, and keep watching the panel
+   itself for any size change (font swap, content change, orientation, etc.) */
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(positionPanelToggle);
+}
+if(window.ResizeObserver){
+  new ResizeObserver(positionPanelToggle).observe(textPanel);
+} else {
+  // fallback for older browsers: a few delayed rechecks after load
+  [100, 400, 1000].forEach(ms => setTimeout(positionPanelToggle, ms));
+}
+
 /* ---------- SEARCH ---------- */
 const searchToggle = document.getElementById('searchToggle');
 const searchWrap = document.getElementById('searchWrap');
