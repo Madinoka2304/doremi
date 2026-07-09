@@ -35,27 +35,44 @@
     background:linear-gradient(180deg, rgba(18,14,23,0.92), transparent);
   }
   .brand-row{ display:flex; align-items:center; justify-content:space-between; }
-  .brand-row .brand-left{ display:flex; align-items:center; gap:10px; }
-  .brand{ font-family:'Instrument Serif',serif; font-style:italic; font-size:28px; }
+  .brand-row .brand-left{
+    display:flex; align-items:center; gap:10px;
+    flex:1; min-width:0;
+  }
+  .brand{
+    font-family:'Instrument Serif',serif; font-style:italic; font-size:23.8px;
+    white-space:nowrap; overflow:hidden;
+    transition:max-width .3s ease, opacity .2s ease;
+    max-width:200px; opacity:1;
+  }
   .search-btn{
-    width:32px; height:32px; border-radius:50%;
+    width:32px; height:32px; border-radius:50%; flex-shrink:0;
     background:var(--surface-2); border:1px solid var(--line); color:var(--muted);
     display:flex; align-items:center; justify-content:center;
   }
   .search-btn.active{ color:var(--gold); border-color:var(--gold); }
   .track-pos{
-    font-family:'JetBrains Mono',monospace; font-size:15px; color:var(--muted); letter-spacing:1.5px;
+    font-family:'JetBrains Mono',monospace; font-size:12.75px; color:var(--muted); letter-spacing:1.5px;
+    white-space:nowrap;
+    transition:max-width .3s ease, opacity .2s ease;
+    max-width:100px; opacity:1;
   }
   .search-wrap{
-    max-height:0; overflow:hidden; transition:max-height .3s ease;
+    max-width:0; overflow:hidden; flex:0;
+    transition:max-width .3s ease, flex .3s ease;
   }
-  .search-wrap.open{ max-height:52px; margin-top:10px; }
+  .search-wrap.open{ max-width:600px; flex:1; }
   .search-wrap input{
     width:100%; background:var(--surface-2); border:1px solid var(--line);
-    border-radius:12px; padding:10px 14px; color:var(--text);
-    font-family:'Archivo',sans-serif; font-size:14px; outline:none;
+    border-radius:12px; padding:8px 12px; color:var(--text);
+    font-family:'Archivo',sans-serif; font-size:11.9px; outline:none;
   }
   .search-wrap input::placeholder{ color:var(--muted); }
+
+  /* when search is open, shrink the brand text and hide the track counter
+     so the input has room to sit beside the magnifying glass, not below it */
+  .brand-row.search-active .brand{ max-width:0; opacity:0; }
+  .brand-row.search-active .track-pos{ max-width:0; opacity:0; }
 
   .search-results-overlay{
     position:fixed; inset:0; z-index:55;
@@ -68,10 +85,10 @@
     display:flex; align-items:center; justify-content:space-between; gap:12px;
     padding:14px 4px; border-bottom:1px solid var(--line);
   }
-  .search-hit .shn{ font-size:14px; }
-  .search-hit .shc{ font-size:10px; color:var(--sage); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:2px; }
-  .search-hit .shp{ font-family:'JetBrains Mono',monospace; color:var(--gold); font-size:13px; flex-shrink:0; }
-  .search-empty{ text-align:center; color:var(--muted); padding:40px 0; font-size:13px; }
+  .search-hit .shn{ font-size:11.9px; }
+  .search-hit .shc{ font-size:8.5px; color:var(--sage); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:2px; }
+  .search-hit .shp{ font-family:'JetBrains Mono',monospace; color:var(--gold); font-size:11.05px; flex-shrink:0; }
+  .search-empty{ text-align:center; color:var(--muted); padding:40px 0; font-size:11.05px; }
   .cat-tabs{
     position:fixed; top:64px; left:0; right:0; z-index:50;
     display:flex; gap:8px; overflow-x:auto; padding:0 16px 9px;
@@ -80,7 +97,7 @@
   }
   .cat-tabs::-webkit-scrollbar{ display:none; }
   .cat-tabs button{
-    flex:0 0 auto; font-family:'JetBrains Mono',monospace; font-size:15px;
+    flex:0 0 auto; font-family:'JetBrains Mono',monospace; font-size:12.75px;
     letter-spacing:0.5px; color:var(--muted);
     background:rgba(36,26,44,0.8); border:1px solid var(--line);
     padding:8px 14px; border-radius:999px; white-space:nowrap;
@@ -136,7 +153,7 @@
     box-shadow:0 14px 30px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(0,0,0,0.06);
   }
   .static-plate .icon{
-    font-size:min(11vh, 13vw);
+    font-size:min(11vh, 11.05vw);
     transition:opacity .3s ease;
   }
   .static-plate img{
@@ -208,10 +225,13 @@
     z-index:60;
     width:30px; height:56px; border-radius:14px;
     background:var(--surface-2); border:1.5px solid var(--gold);
-    color:var(--gold); font-size:15px; font-weight:700;
+    color:var(--gold); font-size:12.75px; font-weight:700;
     display:flex; align-items:center; justify-content:center;
     box-shadow:0 4px 14px -4px rgba(0,0,0,0.5), 0 0 10px -4px rgba(232,179,77,0.5);
-    transition:left .42s cubic-bezier(.3,.8,.35,1), transform .42s cubic-bezier(.3,.8,.35,1), border-radius .3s ease;
+    transition:left .42s cubic-bezier(.3,.8,.35,1), transform .42s cubic-bezier(.3,.8,.35,1), border-radius .3s ease, opacity .2s ease;
+  }
+  .panel-toggle.hidden-during-search{
+    opacity:0; pointer-events:none;
   }
   .panel-toggle.collapsed{
     left:0; transform:translate(0, -50%);
@@ -224,7 +244,7 @@
   .list-scroll::-webkit-scrollbar{ display:none; }
 
   .cat-divider{
-    font-family:'JetBrains Mono',monospace; font-size:12.1px; letter-spacing:1.5px;
+    font-family:'JetBrains Mono',monospace; font-size:10.29px; letter-spacing:1.5px;
     color:var(--sage); text-transform:uppercase;
     padding:18px 0 8px;
   }
@@ -243,15 +263,19 @@
   }
   .li-name{
     font-family:'Instrument Serif',serif; font-style:italic;
-    font-size:15.95px; line-height:1.2; color:var(--muted);
+    font-size:13.56px; line-height:1.2; color:var(--muted);
     transition:font-size .32s cubic-bezier(.3,.8,.35,1), color .32s ease;
   }
   .li-price-inline{
-    font-family:'JetBrains Mono',monospace; font-size:11.2px; color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:9.52px; color:var(--muted);
     flex-shrink:0; transition:opacity .25s ease;
   }
+  .list-item.preview .li-name{
+    font-size:15.72px; color:rgba(244,238,221,0.62);
+    transition:font-size .28s ease, color .28s ease;
+  }
   .list-item.active .li-name{
-    font-size:26.95px; color:var(--text);
+    font-size:17.85px; color:var(--text);
     white-space:normal; overflow:visible; text-overflow:clip;
   }
   .list-item.active .li-price-inline{ opacity:0; }
@@ -261,27 +285,27 @@
     transition:max-height .32s ease, opacity .28s ease, margin .32s ease;
   }
   .list-item.active .li-detail{
-    max-height:220px; opacity:1; margin-top:10px;
+    max-height:150px; opacity:1; margin-top:8px;
   }
   .li-desc{
-    font-size:13.5px; color:var(--muted); line-height:1.5;
+    font-size:11.47px; color:var(--muted); line-height:1.5;
   }
   .li-foot{
     margin-top:14px; display:flex; align-items:center; gap:14px;
   }
   .li-price{
-    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:18.7px; color:var(--gold);
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15.89px; color:var(--gold);
   }
   .li-add{
     width:40px; height:40px; border-radius:50%;
     border:1px solid var(--sage); color:var(--sage); background:transparent;
-    font-size:19px; display:flex; align-items:center; justify-content:center;
+    font-size:16.15px; display:flex; align-items:center; justify-content:center;
     transition:all .18s ease;
   }
   .li-add.added{ background:var(--sage); color:var(--bg); transform:scale(1.08); }
 
   .play-hint{
-    font-family:'JetBrains Mono',monospace; font-size:16px; letter-spacing:1px;
+    font-family:'JetBrains Mono',monospace; font-size:13.6px; letter-spacing:1px;
     color:var(--muted); text-transform:uppercase; margin:0 18px 10px;
     display:flex; align-items:center; gap:7px;
     flex-shrink:0;
@@ -308,11 +332,11 @@
     min-width:0; min-height:0;
   }
   .group-tile:active{ transform:scale(0.95); }
-  .group-tile .gt-icon{ font-size:clamp(21px, 6.5vw, 24.2px); display:flex; align-items:center; justify-content:center; }
+  .group-tile .gt-icon{ font-size:clamp(17.85px, 5.52vw, 20.57px); display:flex; align-items:center; justify-content:center; }
   .group-tile .gt-icon svg{ width:1em; height:1em; color:var(--muted); }
   .group-tile.active .gt-icon svg{ color:var(--gold); }
   .group-tile .gt-label{
-    font-size:clamp(10.5px, 3vw, 11.55px); font-weight:600; text-align:center; line-height:1.25; color:var(--muted);
+    font-size:clamp(8.92px, 2.55vw, 9.82px); font-weight:600; text-align:center; line-height:1.25; color:var(--muted);
     padding:0 4px;
   }
   .group-tile.active{
@@ -336,13 +360,13 @@
   }
   .mini-player.show{ transform:scale(1); opacity:1; }
   .mini-player .mp-icon{
-    font-size:22px; font-weight:800; color:var(--bg); line-height:1;
+    font-size:18.7px; font-weight:800; color:var(--bg); line-height:1;
   }
   .mini-player .badge{
     position:absolute; top:-4px; right:-4px;
     background:var(--bg); color:var(--gold); border:2px solid var(--gold);
     border-radius:999px; min-width:20px; height:20px; padding:0 5px;
-    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700;
+    font-family:'JetBrains Mono',monospace; font-size:9.35px; font-weight:700;
     display:flex; align-items:center; justify-content:center;
   }
 
@@ -370,19 +394,19 @@
     display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
   }
   .cart-head h3{
-    font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; font-size:22px;
+    font-family:'Instrument Serif',serif; font-style:italic; font-weight:400; font-size:18.7px;
   }
   .cart-close{
     width:32px; height:32px; border-radius:50%;
     background:var(--gold); border:none; color:var(--bg);
-    display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; font-size:11.9px; font-weight:700;
   }
   .cart-items{ overflow-y:auto; flex:1; }
   .cart-row{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:10px 0; border-bottom:1px solid var(--line);
   }
-  .cart-row .name{ font-size:13.5px; }
+  .cart-row .name{ font-size:11.47px; }
   .cart-row .qty-controls{
     display:flex; align-items:center; gap:8px;
     background:var(--surface-2); border:1px solid var(--line);
@@ -390,23 +414,23 @@
   }
   .cart-row .qty-controls button{
     width:22px; height:22px; border-radius:50%; border:none; background:transparent;
-    color:var(--text); font-size:14px; display:flex; align-items:center; justify-content:center;
+    color:var(--text); font-size:11.9px; display:flex; align-items:center; justify-content:center;
   }
   .cart-row .qty-controls span{
-    font-family:'JetBrains Mono',monospace; font-size:12px; min-width:14px; text-align:center;
+    font-family:'JetBrains Mono',monospace; font-size:10.2px; min-width:14px; text-align:center;
   }
   .cart-row .row-price{
-    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--gold); flex-shrink:0; min-width:64px; text-align:right;
+    font-family:'JetBrains Mono',monospace; font-size:11.05px; color:var(--gold); flex-shrink:0; min-width:64px; text-align:right;
   }
   .cart-empty{
-    text-align:center; color:var(--muted); font-size:13px; padding:30px 0;
+    text-align:center; color:var(--muted); font-size:11.05px; padding:30px 0;
   }
   .cart-foot{
     margin-top:14px; padding-top:14px; border-top:1px solid var(--line);
     display:flex; align-items:center; justify-content:space-between;
   }
   .cart-foot .grand-total{
-    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:18px; color:var(--gold);
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15.3px; color:var(--gold);
   }
 
   @media (max-width:479px){
@@ -416,6 +440,8 @@
   @media (min-width:640px){
     .text-panel{ padding-left:34px; }
     .group-tiles{ gap:22px; padding:0 30px 16px 18px; }
+    .list-item.active .li-name{ font-size:26.95px; }
+    .list-item.active .li-detail{ max-height:220px; margin-top:10px; }
   }
   @media (prefers-reduced-motion: reduce){
     .vinyl{ animation:none !important; }
@@ -425,17 +451,17 @@
 <body>
 
 <header class="top">
-  <div class="brand-row">
-    <div class="brand-left">
+  <div class="brand-row" id="brandRow">
+    <div class="brand-left" id="brandLeft">
       <div class="brand">Do Re Mi</div>
       <button class="search-btn" id="searchToggle" aria-label="Поиск">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </button>
+      <div class="search-wrap" id="searchWrap">
+        <input type="text" id="searchInput" placeholder="Найти блюдо или напиток…" autocomplete="off">
+      </div>
     </div>
     <div class="track-pos" id="trackPos">01 / 17</div>
-  </div>
-  <div class="search-wrap" id="searchWrap">
-    <input type="text" id="searchInput" placeholder="Найти блюдо или напиток…" autocomplete="off">
   </div>
 </header>
 <div class="cat-tabs" id="catTabs"></div>
@@ -881,6 +907,7 @@ function applyPlatePhoto(d){
 }
 
 function setActive(i){
+  i = Number(i);
   if(i===activeIdx && items[i].classList.contains('active')) return;
   activeIdx = i;
   const d = flat[i];
@@ -906,6 +933,13 @@ let ticking = false;
 
 let suppressAutoActivate = false;
 let settleWatcherId = null;
+
+/* collapse the currently expanded dish back to a compact row, leaving
+   nothing active — tapping the same item again toggles it closed */
+function collapseActive(){
+  items.forEach(el=> el.classList.remove('active'));
+  activeIdx = -1;
+}
 
 function jumpToItem(idx){
   suppressAutoActivate = true;
@@ -944,9 +978,14 @@ function watchForScrollSettle(){
   settleWatcherId = requestAnimationFrame(()=>tick(0));
 }
 
+let scrollDemoUsed = 0;
+const SCROLL_DEMO_LIMIT = 0; // no auto-highlight on scroll at all — only an
+                             // explicit tap (tile, category, or list item) activates
+
 function findClosestAndActivate(){
   ticking = false;
   if(suppressAutoActivate) return;
+  if(scrollDemoUsed >= SCROLL_DEMO_LIMIT) return; // demo used up — only taps activate now
   const rect = listScroll.getBoundingClientRect();
   const centerY = rect.top + rect.height/2;
   let closest = null, minDist = Infinity;
@@ -963,12 +1002,43 @@ function findClosestAndActivate(){
     if(i !== activeIdx && (Date.now() - lastChangeTime) > 260){
       setActive(i);
       lastChangeTime = Date.now();
+      scrollDemoUsed++;
     }
   }
 }
 
+/* lightweight "quarter reveal" while scrolling — tracks the top edge of the
+   list (right where a dish scrolls out from under the tiles block above),
+   not the center of the screen. Updates the plate/icon and gives the name a
+   subtle size bump, but never expands the description/price — that stays
+   reserved for an explicit tap (setActive/jumpToItem). */
+let previewIdx = -1;
+function setPreview(idx){
+  if(idx === previewIdx) return;
+  previewIdx = idx;
+  items.forEach(el=> el.classList.toggle('preview', Number(el.dataset.idx)===idx));
+  const d = flat[idx];
+  if(!d) return;
+  discIcon.textContent = d.icon;
+  vinyl.style.background = d.bg;
+  applyPlatePhoto(d);
+}
+
+function updatePreviewOnScroll(){
+  const lineY = listScroll.getBoundingClientRect().top + 8; // just below the tiles block
+  let closest = null, minDist = Infinity;
+  items.forEach(el=>{
+    const r = el.getBoundingClientRect();
+    const dist = Math.abs(r.top - lineY);
+    if(dist < minDist){ minDist = dist; closest = el; }
+  });
+  if(closest) setPreview(Number(closest.dataset.idx));
+}
+
+let previewTicking = false;
 listScroll.addEventListener('scroll', ()=>{
   if(!ticking){ ticking = true; requestAnimationFrame(findClosestAndActivate); }
+  if(!previewTicking){ previewTicking = true; requestAnimationFrame(()=>{ previewTicking = false; updatePreviewOnScroll(); }); }
 }, {passive:true});
 window.addEventListener('resize', findClosestAndActivate);
 
@@ -980,7 +1050,7 @@ requestAnimationFrame(()=>{
 
 document.getElementById('vinylWrap').addEventListener('click', ()=>{
   playing = !playing;
-  const d = flat[activeIdx];
+  const d = flat[activeIdx] ?? flat[previewIdx] ?? flat[0];
   vinyl.classList.toggle('playing', playing);
   tonearm.classList.toggle('playing', playing);
   plateSpin.classList.toggle('spinning', playing);
@@ -1026,9 +1096,12 @@ const searchInput = document.getElementById('searchInput');
 const searchResultsOverlay = document.getElementById('searchResultsOverlay');
 const searchResultsList = document.getElementById('searchResultsList');
 
+const brandRow = document.getElementById('brandRow');
 searchToggle.addEventListener('click', ()=>{
   const open = searchWrap.classList.toggle('open');
   searchToggle.classList.toggle('active', open);
+  brandRow.classList.toggle('search-active', open);
+  panelToggle.classList.toggle('hidden-during-search', open);
   if(open){
     setTimeout(()=>searchInput.focus(), 150);
   } else {
@@ -1069,6 +1142,8 @@ searchResultsList.addEventListener('click', (e)=>{
   searchResultsOverlay.classList.remove('open');
   searchWrap.classList.remove('open');
   searchToggle.classList.remove('active');
+  brandRow.classList.remove('search-active');
+  panelToggle.classList.remove('hidden-during-search');
   searchInput.value = '';
   jumpToItem(idx);
 });
@@ -1127,8 +1202,12 @@ listScroll.addEventListener('click', (e)=>{
     return;
   }
   const item = e.target.closest('.list-item');
-  if(item && Number(item.dataset.idx) !== activeIdx){
-    jumpToItem(Number(item.dataset.idx));
+  if(!item) return;
+  const idx = Number(item.dataset.idx);
+  if(idx === activeIdx){
+    collapseActive();
+  } else {
+    jumpToItem(idx);
   }
 });
 
