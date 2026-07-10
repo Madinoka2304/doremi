@@ -261,6 +261,11 @@
   .row-compact .li-name{
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1;
   }
+  .hint-dot{
+    display:inline-block; width:6px; height:6px; border-radius:50%;
+    background:var(--gold); margin-left:8px; vertical-align:middle;
+    animation:pulse 1.4s ease-in-out infinite;
+  }
   .li-name{
     font-family:'Instrument Serif',serif; font-style:italic;
     font-size:15.95px; line-height:1.2; color:var(--muted);
@@ -600,12 +605,7 @@
 (function(){
   const overlay = document.getElementById('introOverlay');
   const agreeBtn = document.getElementById('introAgree');
-  if(sessionStorage.getItem('doremiIntroSeen') === '1'){
-    overlay.remove();
-    return;
-  }
   agreeBtn.addEventListener('click', ()=>{
-    sessionStorage.setItem('doremiIntroSeen', '1');
     overlay.classList.add('closing');
     setTimeout(()=> overlay.remove(), 400);
   });
@@ -950,7 +950,7 @@ MENU.forEach((cat)=>{
     el.dataset.idx = i;
     el.innerHTML = `
       <div class="row-compact">
-        <div class="li-name">${it.n}</div>
+        <div class="li-name">${it.n}${i===0 ? '<span class="hint-dot" id="firstHintDot"></span>' : ''}</div>
         <div class="li-price-inline">${it.p.toLocaleString('ru-RU')} ₸</div>
       </div>
       <div class="li-detail">
@@ -994,12 +994,14 @@ function applyPlatePhoto(d){
   test.src = d.photo;
 }
 
-function setActive(i){
+function setActive(i, {expand=true}={}){
   i = Number(i);
-  if(i===activeIdx && items[i].classList.contains('active')) return;
+  if(i===activeIdx && items[i].classList.contains('active') === expand) return;
   activeIdx = i;
   const d = flat[i];
-  items.forEach(el=> el.classList.toggle('active', Number(el.dataset.idx)===i));
+  if(expand){
+    items.forEach(el=> el.classList.toggle('active', Number(el.dataset.idx)===i));
+  }
   discIcon.textContent = d.icon;
   applyPlatePhoto(d);
   vinyl.style.background = d.bg;
@@ -1031,6 +1033,7 @@ function collapseActive(){
 
 function jumpToItem(idx){
   suppressAutoActivate = true;
+  document.getElementById('firstHintDot')?.remove();
   const el = document.querySelector(`.list-item[data-idx="${idx}"]`);
   el?.scrollIntoView({behavior:'smooth', block:'center'});
   setActive(idx);
@@ -1132,7 +1135,7 @@ window.addEventListener('resize', findClosestAndActivate);
 
 requestAnimationFrame(()=>{
   requestAnimationFrame(()=>{
-    setActive(0);
+    setActive(0, {expand:false});
   });
 });
 
